@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/jessfraz/img/reexec"
 	"github.com/jessfraz/img/types"
 	"github.com/sirupsen/logrus"
 )
@@ -50,6 +51,24 @@ func (s *stringSlice) String() string {
 func (s *stringSlice) Set(value string) error {
 	*s = append(*s, value)
 	return nil
+}
+
+func init() {
+	if len(os.Getenv(types.InUnshareEnv)) == 0 {
+		// Do unshare and reexec
+		args := os.Args[1:]
+		logrus.Infof("re-execing with args: %#v", args)
+		cmd, err := reexec.Command(args...)
+		if err != nil {
+			logrus.Fatal("building reexec command failed: %v", err)
+		}
+		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		if err := cmd.Run(); err != nil {
+			logrus.Fatal("running reexec command `%s` failed: %v", strings.Join(args, " "), err)
+		}
+	}
 }
 
 func main() {
