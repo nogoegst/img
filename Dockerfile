@@ -21,6 +21,8 @@ RUN git clone https://github.com/jessfraz/runc.git "$GOPATH/src/github.com/openc
 FROM gobuild-base AS img
 WORKDIR /go/src/github.com/jessfraz/img
 COPY . .
+RUN apk add --no-cache \
+	build-base
 RUN make static && mv img /usr/bin/img
 
 FROM alpine
