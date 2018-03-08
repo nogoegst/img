@@ -6,11 +6,19 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/docker/distribution/reference"
 	"github.com/moby/buildkit/util/dockerexporter"
 )
 
 // SaveImage exports an image as a tarball which can then be imported by docker.
 func (c *Client) SaveImage(ctx context.Context, image string, writer io.WriteCloser) error {
+	// Normalize image name
+	named, err := reference.ParseNormalizedNamed(image)
+	if err != nil {
+		return fmt.Errorf("parsing image name failed: %v", err)
+	}
+	image = named.String()
+
 	// Create the worker opts.
 	opt, err := c.createWorkerOpt()
 	if err != nil {
