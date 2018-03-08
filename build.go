@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/containerd/containerd/namespaces"
+	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/jessfraz/img/client"
 	controlapi "github.com/moby/buildkit/api/services/control"
@@ -84,6 +85,13 @@ func (cmd *buildCommand) Run(args []string) (err error) {
 
 	// Add the latest tag if they did not provide one.
 	cmd.tag = addLatestTagSuffix(cmd.tag)
+
+	// Normalize image name
+	named, err := reference.ParseNormalizedNamed(cmd.tag)
+	if err != nil {
+		return fmt.Errorf("parsing image name failed: %v", err)
+	}
+	cmd.tag = named.String()
 
 	// Set the dockerfile path as the default if one was not given.
 	if cmd.dockerfilePath == "" {
