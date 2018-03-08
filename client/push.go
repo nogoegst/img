@@ -4,12 +4,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/docker/distribution/reference"
 	"github.com/jessfraz/img/exporter/containerimage"
 	"github.com/jessfraz/img/exporter/imagepush"
 )
 
 // Push sends an image to a remote registry.
 func (c *Client) Push(ctx context.Context, image string) error {
+	// Normalize image name
+	named, err := reference.ParseNormalizedNamed(image)
+	if err != nil {
+		return fmt.Errorf("parsing image name failed: %v", err)
+	}
+	image = named.String()
+
 	// Create the worker opts.
 	opt, err := c.createWorkerOpt()
 	if err != nil {
